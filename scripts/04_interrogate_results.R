@@ -10,7 +10,6 @@ lapply(lst, head)
 # plot them!
 library(ggplot2)
 library(ggrepel)
-library(genoppi)
 
 df = read.csv("derived/201125_KO_SALIvsSALI.csv", row.names = NULL)
 df$gene <- df$hgnc_symbol
@@ -27,16 +26,16 @@ plt
 
 
 
-pdf('SALIvsKO_SALI_')
+
+## check enrichment
+library(genoppi)
+pdf('201125_SALIvsKO_SALI_FDR005_GTEx_enrichment.pdf')
 ref = gtex_table
 df$significant <- df$FDR < 0.05
 e <- calc_adjusted_enrichment(df, ref, intersectN = T)
-e$logFDR <- -log10(e$BH.FDR)
-genoppi::plot_tissue_enrichment(e, 
-                                col.tissue = 'list_name', 
-                                col.value = 'logFDR',
-                                xlab = 'GTEx (RNA tissue)',
-                                ylab = '-log10(Hypergeometric FDR)')
+colnames(e)[0] <- 'GTEx_tissue'
+colnames(e)[9] <- 'FDR'
+colnames(e)[10] <- 'FDR'
 
 
 

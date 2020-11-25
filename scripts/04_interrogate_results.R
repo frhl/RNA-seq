@@ -52,7 +52,7 @@ for (f in files){
     geom_point() +
     ggrepel::geom_label_repel(size = 2) +
     theme_bw()
-  plt
+  print(plt)
   
   ## logFC x logCPM
   plt <- ggplot(df, aes(x = logCPM, y = logFC, color = de_expression, label = label)) +
@@ -60,7 +60,7 @@ for (f in files){
     geom_point() +
     ggrepel::geom_label_repel(size = 2) +
     theme_bw()
-  plt
+  print(plt)
   
   # calc directional GTEx enrichment using a set
   # of hypergeometric tests with subsequent FDR correction.

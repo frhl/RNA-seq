@@ -59,7 +59,7 @@ colnames(design) <- gsub("conds", "", colnames(design))
 cont.matrix <- makeContrasts(H441_SUB-KO_SUB, # wt_sub vs ko_sub
                              H441_SUB-SALI,  # wt_sub vs wt_sali
                              SALI-KO_SALI,  # ko_sali vs wt_sal
-                             SUB_SALI = (H441_SUB-KO_SUB) - (SALI-KO_SALI),
+                             #SUB_SALI = (H441_SUB-KO_SUB) - (SALI-KO_SALI),
                              levels=design)
 
 #cont.matrix
@@ -126,11 +126,12 @@ glmfit <- glmFit(y, design)
 # setup pairwise comparison of contrasts, so that we can look
 # at these in sepearte files later.
 
+
 result <- lapply(1:ncol(cont.matrix), function(i){
   
   # get contrasts and calc logFC
-  contr_name <- paste(rownames(cont.matrix)[as.logical(abs(cont.matrix[,i]))], collapse = 'vs')
-  if (i == 4) contr_name <- 'H441_SUB-KO_SUBvsSALI-KO_SALI' # manual ugly name change
+  name = rownames(cont.matrix)
+  contr_name = paste0(name[cont.matrix[,i] == 1], 'vs', name[cont.matrix[,i] == -1], collase = '')
   fit <- glmLRT(glmfit, contrast=cont.matrix[,i])
   de <- decideTestsDGE(fit) # FDR < 0.05
   

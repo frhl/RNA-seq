@@ -35,7 +35,7 @@ M <- median(y$samples$lib.size) * 1e-6
 c(L,M) # quite small library size
 
 # keep gene rows if there at least 2 experiments (~25%) with at least 200.000 counts
-keep.exprs <- filterByExpr(y, group=conds)
+#keep.exprs <- filterByExpr(y, group=conds)
 #y <- y[keep.exprs,, keep.lib.sizes=FALSE]
 (cpm.threshold <- L/10)
 keep <- rowSums(cpm(y)> cpm.threshold) >= 10
@@ -43,16 +43,16 @@ table(keep)
 y <- y[keep,]
 
 # unnormalized expression
-par(mfrow=c(1,2))
-lcpm <- cpm(y, log=TRUE)
-boxplot(lcpm, las=2, col=col, main="")
-title(main="Unnormalised data",ylab="Log-cpm")
+#par(mfrow=c(1,2))
+#lcpm <- cpm(y, log=TRUE)
+#boxplot(lcpm, las=2, col=col, main="")
+#title(main="Unnormalised data",ylab="Log-cpm")
 
 # normalized exprssion
 y <- calcNormFactors(y, method = "TMM")
 lcpm <- cpm(y, log=TRUE)
-boxplot(lcpm, las=2, col=col, main="")
-title(main="Normalised data",ylab="Log-cpm")
+#boxplot(lcpm, las=2, col=col, main="")
+#title(main="Normalised data",ylab="Log-cpm")
 
 # setup design matrix
 design <- model.matrix(~0+conds)
@@ -95,6 +95,10 @@ de <- decideTestsDGE(H441_SUBvsKO_sub)
 summary(de <- decideTestsDGE(H441_SUBvsKO_sub, adjust.method = "fdr"))
 detags <- rownames(y)[as.logical(de)]
 (detags_hgnc <- sort(ensembl_to_hgnc(detags)))
+
+plot(y$counts[rownames(y$counts) == 'ENSG00000168878',])
+text(y$counts[rownames(y$counts) == 'ENSG00000168878',], labels = colnames(y), cex = 0.4)
+
 'SFTPB' %in% detags_hgnc # present!
 
 plotSmear(H441_SUBvsKO_sub, de.tags=detags, main="H441_SUBvsKO_sub", ylim=c(-10,10))
@@ -111,7 +115,8 @@ H441_SUBvsKO_sub$ensembl_gene_id <- rownames(H441_SUBvsKO_sub)
 
 # merge mapping
 H441_SUBvsKO_sub <- merge(H441_SUBvsKO_sub, mapping)
-ggplot(H441_SUBvsKO_sub, aes(x = logFC, y = -log10(PValue))) +
+H441_SUBvsKO_sub$significant <- H441_SUBvsKO_sub$adjp < 0.05
+ggplot(H441_SUBvsKO_sub, aes(x = logFC, y = -log10(PValue), color = significant)) +
   geom_point()
 
 
@@ -123,15 +128,16 @@ result <- lapply(1:ncol(cont.matrix), function(i){
   fit <- glmLRT(glmfit, contrast=cont.matrix[,i])
   de <- decideTestsDGE(fit)
   
+  # sort by p-value
   o <- order(fit$table$PValue)
   fit.tabl <- fit$table[o,]
   
-  # 
+  # get FDR
   FDR <- p.adjust(fit.tabl$PValue, method="fdr")
   fit.tabl <- cbind(fit.tabl, FDR)
   fit.tabl$ensembl_gene_id <- rownames(fit.tabl)
   fit.tabl$hgnc <- ensembl_to_hgnc(fit.tabl$ensembl_gene_id)
-  fit.tabl[]
+  #fit.tabl[]
   
   #mart = getBM(attributes=c('ensembl_gene_id', 'hgnc_symbol'), filters = values = fit.tabl$ensembl_gene_id, mart = ensembl)
   

@@ -58,9 +58,13 @@ design <- model.matrix(~0+conds)
 colnames(design) <- gsub("conds", "", colnames(design)) 
 cont.matrix <- makeContrasts(H441_SUB-KO_SUB, # wt_sub vs ko_sub
                              H441_SUB-SALI,  # wt_sub vs wt_sali
-                             KO_SALI-SALI,  # ko_sali vs wt_sali
+                             SALI-KO_SALI,  # ko_sali vs wt_sal
+                             SUB_SALI = (H441_SUB-KO_SUB) - (SALI-KO_SALI),
                              levels=design)
-cont.matrix
+
+#cont.matrix
+#cont.matrix2 <- makeContrasts(x = (H441_SUB-KO_SUB) - (SALI-KO_SALI),
+#                             levels = design)
 
 # visual check on the level of filtering performed upstream
 par(mfrow=c(1,2))
@@ -126,11 +130,14 @@ result <- lapply(1:ncol(cont.matrix), function(i){
   
   # get contrasts and calc logFC
   contr_name <- paste(rownames(cont.matrix)[as.logical(abs(cont.matrix[,i]))], collapse = 'vs')
+  if (i == 4) contr_name <- 'H441_SUB-KO_SUBvsSALI-KO_SALI' # manual ugly name change
   fit <- glmLRT(glmfit, contrast=cont.matrix[,i])
   de <- decideTestsDGE(fit) # FDR < 0.05
   
-  # get FDR
+  # remove contaminants (keratins) in the samples
   fit.tabl <- fit$table
+
+  # get FDR
   FDR <- p.adjust(fit.tabl$PValue, method="fdr")
   fit.tabl <- cbind(fit.tabl, FDR)
   fit.tabl$ensembl_gene_id <- rownames(fit.tabl)

@@ -75,7 +75,7 @@ for (f in files){
   
   ## check enrichment
   file = paste0(dirpath, "GTEx_enrichment_")
-  write.csv(both, paste0(file,"FDR_lt_005.tsv"), sep = '\t', quote = F)
+  write.table(both, paste0(file,"FDR_lt_005.tsv"), sep = '\t', quote = F)
   #write.csv(positive, paste0(file,"FDR_lt_005_pos.tsv"), sep = '\t', quote = F)
   #write.csv(negative, paste0(file,"FDR_lt_005_neg.tsv"), sep = '\t', quote = F)
   

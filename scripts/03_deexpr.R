@@ -120,23 +120,31 @@ glmfit <- glmFit(y, design)
 #  geom_point()
 
 
-
-
-### look at different coditions
+# setup pairwise comparison of contrasts, so that we can look
+# at these in sepearte files later.
 
 result <- lapply(1:ncol(cont.matrix), function(i){
   
   # get contrasts and calc logFC
   contr_name <- paste(rownames(cont.matrix)[as.logical(abs(cont.matrix[,i]))], collapse = 'vs')
   fit <- glmLRT(glmfit, contrast=cont.matrix[,i])
-  de <- decideTestsDGE(fit)
+  de <- decideTestsDGE(fit) # FDR < 0.05
   
   # get FDR
+  fit.tabl <- fit$table
   FDR <- p.adjust(fit.tabl$PValue, method="fdr")
   fit.tabl <- cbind(fit.tabl, FDR)
   fit.tabl$ensembl_gene_id <- rownames(fit.tabl)
   final <- merge(fit.tabl, mart, all.x = T)
   final <- final[,c(7,1,2:6)]
+  
+  # what genes are up/down regulated
+  reg <- as.data.frame(de)
+  reg$ensembl_gene_id <- rownames(reg)
+  reg$de_expression <- reg$`1*H441_SUB -1*KO_SUB`
+  reg$`1*H441_SUB -1*KO_SUB` <- NULL
+  rownames(reg) <- NULL
+  final <- merge(final, reg, all.x = T)
   
   # sort by FDR
   o <- order(final$FDR)
@@ -144,6 +152,7 @@ result <- lapply(1:ncol(cont.matrix), function(i){
   
   # save to file
   outpath = paste0('derived/201125_',contr_name,'.csv')
+  write(outpath, stdout())
   write.csv(final, outpath)
   
 })

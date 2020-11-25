@@ -1,4 +1,4 @@
-setwd('project/')
+#setwd('project/')
 
 # libs
 library(edgeR)
@@ -7,7 +7,6 @@ library(ggplot2)
 # ensemble to gene mapping
 source('scripts/ensemble_to_hgnc.R')
 
-### pre-processing
 
 # get matrix of raw expressions and ensemble IDs
 df <- read.table('data/201124_gene_count_table_hgnc.txt', sep = '\t')
@@ -20,10 +19,10 @@ layout <- read.table('data/layout_extended.txt', header = T)
 conds <- factor(layout$Group)
 
 # check data read depth
-read.depth <- apply(df, 2, sum)/1000000 
-read.depth <- colSums(df)/1000000 
-summary(read.depth)
-barplot(read.depth, las=2, cex.names=0.5, main = 'read depth (million transcrips)')
+#read.depth <- apply(df, 2, sum)/1000000 
+#read.depth <- colSums(df)/1000000 
+#summary(read.depth)
+#barplot(read.depth, las=2, cex.names=0.5, main = 'read depth (million transcrips)')
 
 # check differentially expressed genes
 y <- DGEList(counts=df, genes=row.names(df))
@@ -34,7 +33,7 @@ L <- mean(y$samples$lib.size) * 1e-6
 M <- median(y$samples$lib.size) * 1e-6
 c(L,M) # quite small library size
 
-# keep gene rows if there at least 2 experiments (~25%) with at least 200.000 counts
+# median libarary size divided by 10 
 #keep.exprs <- filterByExpr(y, group=conds)
 #y <- y[keep.exprs,, keep.lib.sizes=FALSE]
 (cpm.threshold <- M/10)
@@ -153,7 +152,7 @@ result <- lapply(1:ncol(cont.matrix), function(i){
   # save to file
   outpath = paste0('derived/201125_',contr_name,'.csv')
   write(outpath, stdout())
-  write.csv(final, outpath)
+  write.csv(final, outpath, row.names = F)
   
 })
 

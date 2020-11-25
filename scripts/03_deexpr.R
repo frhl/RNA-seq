@@ -56,9 +56,9 @@ lcpm <- cpm(y, log=TRUE)
 # setup design matrix
 design <- model.matrix(~0+conds)
 colnames(design) <- gsub("conds", "", colnames(design)) 
-cont.matrix <- makeContrasts(H441_SUB-KO_SUB, 
-                             H441_SUB-SALI,
-                             KO_SALI-SALI,
+cont.matrix <- makeContrasts(H441_SUB-KO_SUB, # wt_sub vs ko_sub
+                             H441_SUB-SALI,  # wt_sub vs wt_sali
+                             KO_SALI-SALI,  # ko_sali vs wt_sali
                              levels=design)
 cont.matrix
 
@@ -140,8 +140,8 @@ result <- lapply(1:ncol(cont.matrix), function(i){
   # what genes are up/down regulated
   reg <- as.data.frame(de)
   reg$ensembl_gene_id <- rownames(reg)
-  reg$de_expression <- reg$`1*H441_SUB -1*KO_SUB`
-  reg$`1*H441_SUB -1*KO_SUB` <- NULL
+  reg$de_expression <- reg[,1]
+  reg[,1] <- NULL #reg$`1*H441_SUB -1*KO_SUB` <- NULL
   rownames(reg) <- NULL
   final <- merge(final, reg, all.x = T)
   

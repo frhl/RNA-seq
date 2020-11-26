@@ -31,6 +31,7 @@ colnames(design) <- gsub("conds", "", colnames(design))
 cont.matrix <- makeContrasts(H441_SUB-KO_SUB, # wt_sub vs ko_sub
                              H441_SUB-SALI,  # wt_sub vs wt_sali
                              SALI-KO_SALI,  # ko_sali vs wt_sal
+                             KO_SUB-KO_SALI,
                              levels=design)
 
 
@@ -59,6 +60,7 @@ print(size.mean, size.median)
 keep <- rowSums(cpm(y)> cpm.threshold) >= 4
 table(keep)
 y <- y[keep,]
+write.table(data.frame(keep), paste0('derived/',date, '_kept_rows.txt'))
 
 # calculate norm factors
 y <- calcNormFactors(y, method = "TMM")

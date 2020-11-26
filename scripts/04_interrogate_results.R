@@ -1,12 +1,12 @@
 # interrogating data results
 
-library(genoppi) # for enrichment analysis
+
+library(genoppi) 
 library(ggplot2)
 library(RColorBrewer)
 
 
 ### helpers start
-
 calc_gtex_enrichment <- function(df){
   # hypergeometric overlap analysis adjusted with FDR
   # data from genoppi package library(genoppi)
@@ -100,6 +100,10 @@ for (f in files){
     geom_point() +
     theme_minimal()
   print(plt3)
+  
+  # plot heatmaps of differentially expressed genes
+  
+  
   
   # calculate directional GTEx enrichment using a set
   # of hypergeometric tests with subsequent FDR correction.

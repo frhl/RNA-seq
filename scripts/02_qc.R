@@ -68,4 +68,6 @@ p2 <- ggplot(d2, aes(x=cond, y=count)) +
 p2
 ggsave(p2, filename = 'derived/201125_raw_counts_of_SFTBP.pdf', width = 6, height = 10)
 
+# heatmap
+hm <- count.table
 

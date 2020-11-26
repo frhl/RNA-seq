@@ -5,7 +5,7 @@ ensembl = useMart("ensembl",dataset="hsapiens_gene_ensembl")
 attributes = listAttributes(ensembl)
 attributes[grepl('hgnc', attributes$name),]
 mart = getBM(attributes=c('ensembl_gene_id', 'hgnc_symbol'), mart = ensembl)
-write.csv(mart, '201124_fl_ensembl_to_hgnc_mapping.csv')
+dfmerge = merge(df, mart, all.x = T)
 
 # apparantly, 10 and 16 have been switched around. Let's switch them back
 layout <- read.csv('data/layout.txt', sep = '\t')

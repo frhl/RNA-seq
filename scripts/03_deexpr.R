@@ -36,16 +36,10 @@ c(L,M) # quite small library size
 # median libarary size divided by 10 
 #keep.exprs <- filterByExpr(y, group=conds)
 #y <- y[keep.exprs,, keep.lib.sizes=FALSE]
-(cpm.threshold <- M/10)
-keep <- rowSums(cpm(y)> cpm.threshold) >= 10
+(cpm.threshold <- L/10)
+keep <- rowSums(cpm(y)> cpm.threshold) >= 4
 table(keep)
 y <- y[keep,]
-
-# unnormalized expression
-#par(mfrow=c(1,2))
-#lcpm <- cpm(y, log=TRUE)
-#boxplot(lcpm, las=2, col=col, main="")
-#title(main="Unnormalised data",ylab="Log-cpm")
 
 # normalized exprssion
 y <- calcNormFactors(y, method = "TMM")
@@ -59,13 +53,9 @@ colnames(design) <- gsub("conds", "", colnames(design))
 cont.matrix <- makeContrasts(H441_SUB-KO_SUB, # wt_sub vs ko_sub
                              H441_SUB-SALI,  # wt_sub vs wt_sali
                              SALI-KO_SALI,  # ko_sali vs wt_sal
-                             #SUB_SALI = (H441_SUB-KO_SUB) - (SALI-KO_SALI),
                              levels=design)
 
-#cont.matrix
-#cont.matrix2 <- makeContrasts(x = (H441_SUB-KO_SUB) - (SALI-KO_SALI),
-#                             levels = design)
-
+pdf('201120_voom_plots.pdf')
 # visual check on the level of filtering performed upstream
 par(mfrow=c(1,2))
 v <- voom(y, design, plot=TRUE)
@@ -90,43 +80,7 @@ plotBCV(y)
 # fit glm
 glmfit <- glmFit(y, design)
 
-# look at first differential expression
-#H441_SUBvsKO_sub <- glmLRT(glmfit, contrast=cont.matrix[,1])
-#de <- decideTestsDGE(H441_SUBvsKO_sub)
-
-# what genes are upregulated / downregulated?
-#summary(de <- decideTestsDGE(H441_SUBvsKO_sub, adjust.method = "fdr"))
-#detags <- rownames(y)[as.logical(de)]
-#(detags_hgnc <- sort(ensembl_to_hgnc(detags)))
-
-#plot(y$counts[rownames(y$counts) == 'ENSG00000168878',])
-#text(y$counts[rownames(y$counts) == 'ENSG00000168878',], labels = colnames(y), cex = 0.4)
-
-#'SFTPB' %in% detags_hgnc # present!
-
-#plotSmear(H441_SUBvsKO_sub, de.tags=detags, main="H441_SUBvsKO_sub", ylim=c(-10,10))
-#abline(h=c(-1,1), col="blue")
-
-# order table by pvalue
-#o <- order(H441_SUBvsKO_sub$table$PValue)
-#H441_SUBvsKO_sub <- H441_SUBvsKO_sub$table[o,]
-
-## compute and add adjusted p-values
-#adjp <- p.adjust(H441_SUBvsKO_sub$PValue, method="fdr")
-#H441_SUBvsKO_sub <- cbind(H441_SUBvsKO_sub, adjp)
-#H441_SUBvsKO_sub$ensembl_gene_id <- rownames(H441_SUBvsKO_sub)
-
-# merge mapping
-#H441_SUBvsKO_sub <- merge(H441_SUBvsKO_sub, mapping)
-#H441_SUBvsKO_sub$significant <- H441_SUBvsKO_sub$adjp < 0.05
-#ggplot(H441_SUBvsKO_sub, aes(x = logFC, y = -log10(PValue), color = significant)) +
-#  geom_point()
-
-
-# setup pairwise comparison of contrasts, so that we can look
-# at these in sepearte files later.
-
-
+# run over all samples
 result <- lapply(1:ncol(cont.matrix), function(i){
   
   # get contrasts and calc logFC
@@ -163,7 +117,7 @@ result <- lapply(1:ncol(cont.matrix), function(i){
   write.csv(final, outpath, row.names = F)
   
 })
-
+graphics.off()
 
 
 

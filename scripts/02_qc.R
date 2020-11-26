@@ -59,7 +59,6 @@ my_comparisons <- list( c("SALI", "KO_SUB"), c('SALI', 'KO_SALI'), c('SALI', 'H4
 d2 <- d1[d1$hgnc_symbol == 'SFTPB',]
 p2 <- ggplot(d2, aes(x=cond, y=count)) + 
   stat_compare_means(comparisons = my_comparisons, label = "p.signif") +
-  #stat_compare_means() +
   geom_point() +
   geom_boxplot() +
   xlab('Raw count') + ylab('Conditions') +
@@ -68,6 +67,8 @@ p2 <- ggplot(d2, aes(x=cond, y=count)) +
 p2
 ggsave(p2, filename = 'derived/201125_raw_counts_of_SFTBP.pdf', width = 6, height = 10)
 
+
 # heatmap
-hm <- count.table
+
+
 

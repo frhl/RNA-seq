@@ -1,10 +1,13 @@
 # interrogating data results
 
-
+# libs
+library(ggrepel)
 library(genoppi) 
+library(gplots)
 library(ggplot2)
 library(RColorBrewer)
 
+date <- '201126'
 
 ### helpers start
 calc_gtex_enrichment <- function(df){
@@ -18,16 +21,16 @@ calc_gtex_enrichment <- function(df){
 
 ### helpers end
 
-# check results
-files = list.files('derived/', pattern = '\\.csv', full.names = T)
+
+# load results from file
+files = list.files('derived/', pattern = '201126', full.names = T)
 lst = lapply(files, function(x) read.csv(x))
 names(lst) <- basename(files)
 lapply(lst, head)
 
-# plot them!
-library(ggplot2)
-library(ggrepel)
-
+#################################
+# for each file, get some stats #
+# ###############################
 
 for (f in files){
   
@@ -52,13 +55,25 @@ for (f in files){
   df$condition[df$de_expression == -1] <- cond2
   df$condition <- as.factor(df$condition)
   
-  ## compare contrast
+  ######################
+  ## compare contrast ##
+  ######################
   
   # count how many genes are expressed in either condition
   n_cond1 = sum(df$de_expression == 1)
   n_cond2 = sum(df$de_expression == -1)
   
-  # annotations
+  # get df representing each condition for each condition
+  df_cond1 = df[df$de_expression == 1,]$ensembl_gene_id
+  df_cond1_background = df[df$de_expression != 1,]$ensembl_gene_id
+  df_cond2 = df[df$de_expression == -1,]$ensembl_gene_id
+  df_cond2_background = df[df$de_expression != -1,]$ensembl_gene_id
+  
+  write.table(df_cond1, file = paste0(dirpath, date,'_',cond1,'_cond1','.tsv'), sep = '\t', quote = F, row.names = F)
+  write.table(df_cond1_background, file = paste0(dirpath, date,'_',cond1,'_cond1_background','.tsv'), sep = '\t', quote = F, row.names = F)
+  
+  
+  # annotations (for plotting)
   annotations <- data.frame(
     xpos = c(-Inf, Inf),
     ypos =  c(Inf, Inf),
@@ -67,7 +82,7 @@ for (f in files){
     hjustvar = c(-2,2) ,
     vjustvar = c(3,3))
   
-  # colors
+  # colors for plotting
   cbp1 <- c("#E69F00", "#56B4E9", "#999999", "#009E73",
             "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
   
@@ -81,7 +96,7 @@ for (f in files){
     geom_point() +
     ggtitle(paste(dname,'(FDR < 0.05)')) +
     scale_color_manual(values=cbp1) +
-    ggrepel::geom_label_repel(size = 1.5, show.legend = FALSE) +
+    ggrepel::geom_label_repel(size = 2, show.legend = FALSE) +
     theme_minimal()
   print(plt1)
   
@@ -107,20 +122,19 @@ for (f in files){
   
   # calculate directional GTEx enrichment using a set
   # of hypergeometric tests with subsequent FDR correction.
-  #df1 <- df
-  #df1$significant <- df1$FDR < 0.05
-  #both <- calc_gtex_enrichment(df1)
-  #df1$significant <- df1$FDR < 0.05 & df1$logFC > 0
-  #positive <- calc_gtex_enrichment(df1)
-  #df1$significant <- df1$FDR < 0.05 & df1$logFC < 0
-  #negative <- calc_gtex_enrichment(df1)
+  df1 <- df
+  df1$significant <- df1$FDR < 0.05
+  both <- calc_gtex_enrichment(df1)
+  df1$significant <- df1$FDR < 0.05 & df1$logFC > 0
+  positive <- calc_gtex_enrichment(df1)
+  df1$significant <- df1$FDR < 0.05 & df1$logFC < 0
+  negative <- calc_gtex_enrichment(df1)
   
   ## check enrichment
-  #file = paste0(dirpath, "GTEx_enrichment_")
-  #write.table(both, paste0(file,"FDR_lt_005.tsv"), sep = '\t', quote = F)
-  #write.table(positive, paste0(file,"FDR_lt_005_logFC_pos.tsv"), sep = '\t', quote = F)
-  #write.table(negative, paste0(file,"FDR_lt_005_logFC_neg.tsv"), sep = '\t', quote = F)
-  
+  file = paste0(dirpath, "GTEx_enrichment_")
+  write.table(both, paste0(file,"FDR_lt_005.tsv"), sep = '\t', quote = F)
+  write.table(positive, paste0(file,"FDR_lt_005_logFC_pos.tsv"), sep = '\t', quote = F)
+  write.table(negative, paste0(file,"FDR_lt_005_logFC_neg.tsv"), sep = '\t', quote = F)
   
   graphics.off()
   

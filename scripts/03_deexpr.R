@@ -5,12 +5,25 @@ library(edgeR)
 library(ggplot2)
 
 # ensemble to gene mapping
-source('scripts/ensemble_to_hgnc.R')
+#source('scripts/ensemble_to_hgnc.R')
+
+# for mapping genes
+library("biomaRt")
+listMarts()
+ensembl = useMart("ensembl",dataset="hsapiens_gene_ensembl")
+attributes = listAttributes(ensembl)
+attributes[grepl('hgnc', attributes$name),]
+mart = getBM(attributes=c('ensembl_gene_id', 'hgnc_symbol'), mart = ensembl)
+
+
+# vars
+date <- '201126'
 
 ################################
 ## setup design of experiment ##
 ################################
 
+# this layout is just the sample 10 / 16 switched around.
 layout <- read.table('data/layout_extended.txt', header = T)
 conds <- factor(layout$Group)
 design <- model.matrix(~0+conds)
@@ -51,6 +64,11 @@ y <- y[keep,]
 y <- calcNormFactors(y, method = "TMM")
 lcpm <- cpm(y, log=TRUE)
 
+# what are the top 10 % expressed genes
+cpm(y, log = TRUE)
+
+
+
 # Estimates a common negative binomial dispersion parameter for 
 # a DGE dataset with a general experimental design.
 par(mfrow=c(1,1))
@@ -64,7 +82,6 @@ disps <- list(y$common.dispersion, y$trended.dispersion, y$tagwise.dispersion)
 
 # fit glm
 glmfit <- glmFit(y, design)
-
 
 
 #######################
@@ -104,7 +121,7 @@ result <- lapply(1:ncol(cont.matrix), function(i){
   final <- final[o,]
   
   # save to file
-  outpath = paste0('derived/201125_',contr_name,'.csv')
+  outpath = paste0('derived/',date,'_',contr_name,'.csv')
   write(outpath, stdout())
   write.csv(final, outpath, row.names = F)
   

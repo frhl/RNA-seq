@@ -69,8 +69,6 @@ lcpm <- cpm(y, log=TRUE)
 # what are the top 10 % expressed genes
 cpm(y, log = TRUE)
 
-
-
 # Estimates a common negative binomial dispersion parameter for 
 # a DGE dataset with a general experimental design.
 par(mfrow=c(1,1))

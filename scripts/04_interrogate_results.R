@@ -18,6 +18,8 @@ date <- '201126'
 cbp1 <- c("#E69F00", "#56B4E9", "#999999", "#009E73",
           "#F0E442", "#0072B2", "#D55E00", "#CC79A7")
 
+x <- c("#999999", "#E69F00", "#56B4E9", "#009E73", "#D55E00")
+
 gms_colors <- c("X.NA" = "#999999", 
                 "KO_SALI" = "#E69F00", 
                 "SALI" = "#56B4E9",
@@ -111,36 +113,25 @@ for (f in files){
     geom_text(data=annotations,aes(x=xpos,y=ypos,hjust=hjustvar,vjust=vjustvar,label=annotateText), color = 'black') +
     geom_point() +
     ggtitle(paste(dname,'(FDR < 0.05)')) +
-    #scale_color_manual(values=cbp1) +
     ggrepel::geom_label_repel(size = 2, show.legend = FALSE) +
-    scale_colour_manual(values = gms_colors) +
+    scale_colour_manual(name = "condition", values = gms_colors) +
     theme_minimal()
   print(plt1)
-
   
   plt2 <- ggplot(dftop10, aes(logFC, -log10(PValue), color = condition, label = label)) +
     geom_text(data=annotations,aes(x=xpos,y=ypos,hjust=hjustvar,vjust=vjustvar,label=annotateText), color = 'black') +
     geom_point() +
     ggtitle(paste(dname,'(FDR < 0.01)')) +
-    scale_colour_manual(values = gms_colors) +
+    scale_colour_manual(name = "condition", values = gms_colors) +
     ggrepel::geom_label_repel(size = 2, show.legend = FALSE) +
     theme_minimal()
   print(plt2)
-  
-  #plt3 <- ggplot(df0001, aes(logFC, -log10(PValue), color = condition, label = label)) +
-  #  geom_text(data=annotations,aes(x=xpos,y=ypos,hjust=hjustvar,vjust=vjustvar,label=annotateText), color = 'black') +
-  #  geom_point() +
-  #  ggtitle(paste(dname,'(FDR < 0.01)')) +
-  #  scale_color_manual(values=cbp1) +
-  #  ggrepel::geom_label_repel(size = 2, show.legend = FALSE) +
-  #  theme_minimal()
-  #print(plt3)
   
   plt4 <- ggplot(df, aes(logFC, -log10(PValue), color = condition, label = label)) +
     geom_text(data=annotations,aes(x=xpos,y=ypos,hjust=hjustvar,vjust=vjustvar,label=annotateText), color = 'black') +
     geom_point() +
     ggtitle(paste(dname,'(FDR < 0.05)')) +
-    scale_colour_manual(values = gms_colors) +
+    scale_colour_manual(name = "condition", values = gms_colors) +
     theme_minimal()
   print(plt4)
   
@@ -149,45 +140,53 @@ for (f in files){
   ## logFC x logCPM
   plt5 <- ggplot(df, aes(x = logCPM, y = logFC, color = condition, label = label)) +
     ggtitle(paste(dname,'(FDR < 0.05)')) +
-    scale_colour_manual(values = gms_colors) +
+    scale_colour_manual(name = "condition", values = gms_colors) +
     geom_point() +
     theme_minimal()
   print(plt5)
   
-  
   plt6 <- ggplot(dftop10, aes(x = logCPM, y = logFC, color = condition, label = label)) +
     ggtitle(paste(dname,'(FDR < 0.05)')) +
-    scale_colour_manual(values = gms_colors) +
+    scale_colour_manual(name = "condition", values = gms_colors) +
+    ggrepel::geom_label_repel(size = 2, show.legend = FALSE) +
     geom_point() +
     theme_minimal()
   print(plt6)
   
-  # plot heatmaps of differentially expressed genes
+  graphics.off()
   
-  if (F){
+  # copy to folder for vassis convenience
+  plotfolder = paste0('derived/plots/',dname,'.pdf')
+  file.copy(from=outplot, to=plotfolder, overwrite = TRUE, recursive = FALSE, copy.mode = TRUE)
+  
+  if (F){ # we don't want to call this line all the time..
+    
   # calculate directional GTEx enrichment using a set
   # of hypergeometric tests with subsequent FDR correction.
   
-  df1 <- df
-  df1$significant <- df1$FDR < 0.05
-  both <- calc_gtex_enrichment(df1)
-  df1$significant <- df1$FDR < 0.05 & df1$logFC > 0
-  positive <- calc_gtex_enrichment(df1)
-  df1$significant <- df1$FDR < 0.05 & df1$logFC < 0
-  negative <- calc_gtex_enrichment(df1)
-  qq = calc_c5_enrichment(df1)
-  
-
-  
-  ## check enrichment
-  file = paste0(dirpath, "GTEx_enrichment_")
-  write.table(both, paste0(file,"FDR_lt_005.tsv"), sep = '\t', quote = F)
-  write.table(positive, paste0(file,"FDR_lt_005_logFC_pos.tsv"), sep = '\t', quote = F)
-  write.table(negative, paste0(file,"FDR_lt_005_logFC_neg.tsv"), sep = '\t', quote = F)
-  
-  ## msigDB
-  
-  
+    df1 <- df
+    df1$significant <- df1$FDR < 0.05
+    both <- calc_gtex_enrichment(df1)
+    both_hpa <- calc_hpa_enrichment(df1)
+    df1$significant <- df1$FDR < 0.05 & df1$logFC > 0
+    positive <- calc_gtex_enrichment(df1)
+    positive_hpa <- calc_hpa_enrichment(df1)
+    df1$significant <- df1$FDR < 0.05 & df1$logFC < 0
+    negative <- calc_gtex_enrichment(df1)
+    negative_hpa <- calc_hpa_enrichment(df1)
+    
+    ## gtex enrichment files
+    gtexfile = paste0(dirpath, "GTEx_enrichment_")
+    write.table(both, paste0(gtexfile,"FDR_lt_005.tsv"), sep = '\t', quote = F)
+    write.table(positive, paste0(gtexfile,"FDR_lt_005_logFC_pos.tsv"), sep = '\t', quote = F)
+    write.table(negative, paste0(gtexfile,"FDR_lt_005_logFC_neg.tsv"), sep = '\t', quote = F)
+    
+    ## hpa enrichment files
+    hpafile = paste0(dirpath, "hpa_enrichment_")
+    write.table(both, paste0(hpafile,"FDR_lt_005.tsv"), sep = '\t', quote = F)
+    write.table(positive_hpa, paste0(hpafile,"FDR_lt_005_logFC_pos.tsv"), sep = '\t', quote = F)
+    write.table(negative_hpa, paste0(hpafile,"FDR_lt_005_logFC_neg.tsv"), sep = '\t', quote = F)
+    
   }
   
   graphics.off()

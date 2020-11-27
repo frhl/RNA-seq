@@ -17,11 +17,13 @@ count.table$hgnc_symbol <- NULL
 count.table$ensembl_gene_id <- NULL
 
 # GMS tool for QC analysis
-simple.RNA.QC(count.table, layout.table, 'derived/201125_qc_summary')
+simple.RNA.QC(count.table, layout.table, 'derived/201126_qc_summary')
 
 # cpm normalisation
-#normalised.count.table <- sweep(count.table, 2, colSums(count.table),FUN="/")
-#normalised.count.table <- normalised.count.table * 1000000
+normalised.count.table <- sweep(count.table, 2, colSums(count.table),FUN="/")
+normalised.count.table <- normalised.count.table * 1000000
+
+heatmap(normalised.count.table)
 
 # Look at surfactant gene expression
 hgnc <- read.csv('201124_fl_ensembl_to_hgnc_mapping.csv')
